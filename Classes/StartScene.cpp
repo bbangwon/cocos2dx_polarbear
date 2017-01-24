@@ -8,6 +8,8 @@
 
 #include "StartScene.h"
 #include "BackgroundLayer.h"
+#include "StageScene.h"
+#include "RankingPopup.h"
 
 USING_NS_CC;
 
@@ -59,9 +61,13 @@ bool StartScene::init()
 void StartScene::onClickGame(cocos2d::Ref *object)
 {
     log("onClickGame");
+    
+    auto Scene = TransitionCrossFade::create(0.5f, StageScene::createScene());
+    Director::getInstance()->pushScene(Scene);
 }
 
 void StartScene::onClickRank(cocos2d::Ref *object)
 {
     log("onClickRank");
+    this->addChild(RankingPopup::create(), 99);
 }

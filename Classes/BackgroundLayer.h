@@ -18,6 +18,11 @@ class BackgroundLayer : public Layer
 public:
     static BackgroundLayer *create();
     bool init();
+    
+    void callWhale();
+    void callWave();
+    
+    void removeMe(Node *node);
 };
 
 #endif /* BackgroundLayer_h */

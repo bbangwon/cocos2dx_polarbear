@@ -18,6 +18,12 @@ public:
     
     virtual bool init();
     CREATE_FUNC(StageScene);
+    
+    void onClickBack(Ref *object);
+    
+    cocos2d::LayerColor *_stageLayer;
+    void setStage();
+    void onClickStage(Ref *object);
 };
 
 

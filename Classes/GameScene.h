@@ -19,6 +19,13 @@ public:
     static cocos2d::Scene* createScene(Node *stageScene, int stage);
     virtual bool init();
     CREATE_FUNC(GameScene);
+    
+    LayerColor *_mapLayer;
+    LayerColor *_menuLayer;
+    
+    void setMapLayer(int mapArr[4][5]);
+    LayerColor* getMaptile(int row, int col, int type);
+    void setMenuLayer();
 };
 
 #endif /* GameScene_h */

@@ -26,6 +26,9 @@ public:
     void setMapLayer(int mapArr[4][5]);
     LayerColor* getMaptile(int row, int col, int type);
     void setMenuLayer();
+    
+    Sprite *getPenguinSprite();
+    Sprite *getGoalFlagSprite();
 };
 
 #endif /* GameScene_h */

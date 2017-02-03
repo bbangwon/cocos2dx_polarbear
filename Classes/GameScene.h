@@ -10,6 +10,7 @@
 #define GameScene_h
 
 #include "cocos2d.h"
+#include "Polarbear.h"
 
 USING_NS_CC;
 
@@ -29,6 +30,8 @@ public:
     
     Sprite *getPenguinSprite();
     Sprite *getGoalFlagSprite();
+    
+    Polarbear *_polarbear;
 };
 
 #endif /* GameScene_h */

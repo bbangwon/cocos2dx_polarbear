@@ -9,6 +9,7 @@
 #include "GameScene.h"
 #include "BackgroundLayer.h"
 
+
 static Node *_stageScene;
 static int _stage;
 
@@ -93,7 +94,10 @@ LayerColor* GameScene::getMaptile(int row, int col, int type){
         tile->addChild(ice);
         
         if(type == 1){
-            
+            _polarbear = Polarbear::create();
+            _polarbear->setAnchorPoint(Point(0.5f, 0));
+            _polarbear->setPosition(Point(tile->getPositionX() + tile->getContentSize().width / 2, tile->getPositionY() + tile->getContentSize().height / 2));
+            _mapLayer->addChild(_polarbear, 5);
         }
         else if(type == 3){
             auto penguin = getPenguinSprite();

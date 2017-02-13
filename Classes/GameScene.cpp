@@ -69,9 +69,15 @@ void GameScene::setMapLayer(int mapArr[4][5])
     }
 }
 
-LayerColor* GameScene::getMaptile(int row, int col, int type){
+Menu* GameScene::getMaptile(int row, int col, int type){
     auto tile = LayerColor::create(Color4B(255, 0, 0, 0), 96, 55);
-    tile->setPosition(Point(col * tile->getContentSize().width, row * tile->getContentSize().height));
+
+	auto tileMenu = MenuItemSprite::create(tile, nullptr, CC_CALLBACK_1(GameScene::onClickTile, this));
+	tileMenu->setPosition(Point(col * tile->getContentSize().width, row * tile->getContentSize().height));
+	tileMenu->setAnchorPoint(Point(0, 0));
+
+	auto menu = Menu::create(tileMenu, nullptr);
+	menu->setPosition(Point::ZERO);    
     
     if(type == 0 || type == 1 || type == 3){
         std::string iceImg;
@@ -96,7 +102,7 @@ LayerColor* GameScene::getMaptile(int row, int col, int type){
         if(type == 1){
             _polarbear = Polarbear::create();
             _polarbear->setAnchorPoint(Point(0.5f, 0));
-            _polarbear->setPosition(Point(tile->getPositionX() + tile->getContentSize().width / 2, tile->getPositionY() + tile->getContentSize().height / 2));
+            _polarbear->setPosition(Point(tileMenu->getPositionX() + tileMenu->getContentSize().width / 2, tileMenu->getPositionY() + tileMenu->getContentSize().height / 2));
             _mapLayer->addChild(_polarbear, 5);
         }
         else if(type == 3){
@@ -143,8 +149,12 @@ LayerColor* GameScene::getMaptile(int row, int col, int type){
     
     int tag = col + (5*row) + 1;
     log("mapArr[%d][%d], tag = %d", row, col, tag);
-    tile->setTag(tag);
-    return tile;
+    menu->setTag(tag);
+
+	if (type == 1)
+		_polarbearCurrentTag = tag;
+
+    return menu;
 }
 
 void GameScene::setMenuLayer(){
@@ -215,3 +225,58 @@ Sprite* GameScene::getGoalFlagSprite()
     
     return flag;
 }
+
+void GameScene::onClickTile(Ref * object)
+{
+	auto tile = (MenuItem *)object;
+	log("tag = %d", tile->getParent()->getTag());
+
+	bool isMove = checkTileMove(tile->getParent()->getTag(), _polarbearCurrentTag);
+
+	if (isMove == false)
+		return;
+
+	bool result = _polarbear->setMoveTo(Point(tile->getPositionX() + tile->getContentSize().width / 2, tile->getPositionY() + tile->getContentSize().height / 2));
+	if (result) {
+		_polarbearCurrentTag = tile->getParent()->getTag();
+	}
+}
+
+bool GameScene::checkTileMove(int tileTag, int bearTag)
+{
+	log("tag = %d", tileTag);
+
+	int col = (tileTag - 1) % 5;
+	int row = (tileTag - 1 - col) / 5;
+
+	log("col = %d, row = %d", col, row);
+
+	log("polarbear_current_tag = %d", bearTag);
+
+	int bearCol = (bearTag - 1) % 5;
+	int bearRow = (bearTag - 1 - bearCol) / 5;
+
+	log("bearCol = %d, bearRow = %d", bearCol, bearRow);
+	if (tileTag == bearTag)
+	{
+		log("move false");
+		return false;
+	}
+	else if ((col <= bearCol + 1 && col >= bearCol - 1) && (row <= bearRow + 1 && row >= bearRow - 1)) {
+		if (!(col == bearCol - 1 && row == bearRow + 1) && !(col == bearCol - 1 && row == bearRow - 1) &&
+			!(col == bearCol + 1 && row == bearRow - 1) && !(col == bearCol + 1 && row == bearRow + 1)) {
+			log("move true");
+			return true;
+		}
+		else
+		{
+			log("move false");
+			return false;
+		}
+	}
+	else {
+		log("move false");
+		return false;
+	}
+}
+

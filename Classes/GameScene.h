@@ -25,13 +25,18 @@ public:
     LayerColor *_menuLayer;
     
     void setMapLayer(int mapArr[4][5]);
-    LayerColor* getMaptile(int row, int col, int type);
+    Menu* getMaptile(int row, int col, int type);
     void setMenuLayer();
     
     Sprite *getPenguinSprite();
     Sprite *getGoalFlagSprite();
     
     Polarbear *_polarbear;
+
+	void onClickTile(Ref *object);
+
+	int _polarbearCurrentTag;
+	bool checkTileMove(int tileTag, int bearTag);
 };
 
 #endif /* GameScene_h */

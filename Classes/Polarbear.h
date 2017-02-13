@@ -30,6 +30,10 @@ public:
     Action *_jumpBottom;
     
     void setAnimation(int type);
+	bool setMoveTo(Point moveTo);
+
+	void setWait();
+	bool _isAnimation;
 };
 
 

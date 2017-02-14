@@ -37,6 +37,8 @@ public:
 
 	int _polarbearCurrentTag;
 	bool checkTileMove(int tileTag, int bearTag);
+
+	Sprite *_beforeIceTile;
 };
 
 #endif /* GameScene_h */

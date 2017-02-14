@@ -71,6 +71,7 @@ void GameScene::setMapLayer(int mapArr[4][5])
 
 Menu* GameScene::getMaptile(int row, int col, int type){
     auto tile = LayerColor::create(Color4B(255, 0, 0, 0), 96, 55);
+	tile->setTag(1);
 
 	auto tileMenu = MenuItemSprite::create(tile, nullptr, CC_CALLBACK_1(GameScene::onClickTile, this));
 	tileMenu->setPosition(Point(col * tile->getContentSize().width, row * tile->getContentSize().height));
@@ -97,6 +98,7 @@ Menu* GameScene::getMaptile(int row, int col, int type){
         }
         auto ice = Sprite::create(iceImg.c_str());
         ice->setPosition(Point(tile->getContentSize().width / 2, tile->getContentSize().height / 2));
+		ice->setTag(1);
         tile->addChild(ice);
         
         if(type == 1){
@@ -104,6 +106,9 @@ Menu* GameScene::getMaptile(int row, int col, int type){
             _polarbear->setAnchorPoint(Point(0.5f, 0));
             _polarbear->setPosition(Point(tileMenu->getPositionX() + tileMenu->getContentSize().width / 2, tileMenu->getPositionY() + tileMenu->getContentSize().height / 2));
             _mapLayer->addChild(_polarbear, 5);
+
+			_beforeIceTile = ice;
+			_beforeIceTile->setTag(1);
         }
         else if(type == 3){
             auto penguin = getPenguinSprite();
@@ -116,6 +121,7 @@ Menu* GameScene::getMaptile(int row, int col, int type){
     {
         auto ice = Sprite::create("goal.png");
         ice->setPosition(Point(tile->getContentSize().width / 2, tile->getContentSize().height / 2));
+		ice->setTag(1);
         tile->addChild(ice);
         
         auto flag = getGoalFlagSprite();
@@ -144,6 +150,7 @@ Menu* GameScene::getMaptile(int row, int col, int type){
         
         auto breakIce = Sprite::create(iceImg.c_str());
         breakIce->setPosition(Point(tile->getContentSize().width / 2, tile->getContentSize().height / 2));
+		breakIce->setTag(1);
         tile->addChild(breakIce);
     }
     
@@ -229,15 +236,18 @@ Sprite* GameScene::getGoalFlagSprite()
 void GameScene::onClickTile(Ref * object)
 {
 	auto tile = (MenuItem *)object;
-	log("tag = %d", tile->getParent()->getTag());
-
+	log("tag = %d", tile->getParent()->getTag());	
+	
 	bool isMove = checkTileMove(tile->getParent()->getTag(), _polarbearCurrentTag);
-
-	if (isMove == false)
+	if (isMove == false || tile->getParent()->getTag() < 0)
 		return;
 
 	bool result = _polarbear->setMoveTo(Point(tile->getPositionX() + tile->getContentSize().width / 2, tile->getPositionY() + tile->getContentSize().height / 2));
 	if (result) {
+		_beforeIceTile->runAction(FadeOut::create(1));
+		_beforeIceTile->getParent()->getParent()->getParent()->setTag(-1);
+		_beforeIceTile = (Sprite*)tile->getChildByTag(1)->getChildByTag(1);
+
 		_polarbearCurrentTag = tile->getParent()->getTag();
 	}
 }

@@ -9,6 +9,7 @@
 #include "GameScene.h"
 #include "BackgroundLayer.h"
 #include "GameoverPopup.h"
+#include "PausePopup.h"
 
 
 static Node *_stageScene;
@@ -168,7 +169,14 @@ Menu* GameScene::getMaptile(int row, int col, int type){
 }
 
 void GameScene::setMenuLayer(){
-    
+	auto winSize = Director::getInstance()->getOpenGLView()->getDesignResolutionSize();
+
+	auto pause = MenuItemImage::create("btn_pause.png", "btn_pause_on.png", CC_CALLBACK_1(GameScene::onClickPause, this));
+	pause->setPosition(Point(winSize.width - 20, winSize.height - 20));
+
+	auto menu = Menu::create(pause, nullptr);
+	menu->setPosition(Point::ZERO);
+	_menuLayer->addChild(menu);
 }
 
 Sprite* GameScene::getPenguinSprite(){
@@ -390,5 +398,33 @@ void GameScene::fallSeaCallBack()
 {
 	log("fallSeaCallBack");
 	this->addChild(GameoverPopup::create(), 99);
+}
+
+void GameScene::onClickPause(Ref * object)
+{
+	log("onClickPause");
+	this->addChild(PausePopup::create(), 99);
+}
+
+void GameScene::restartGame()
+{
+	log("restartGame");
+
+	_mapLayer->removeAllChildrenWithCleanup(true);
+	_menuLayer->removeAllChildrenWithCleanup(true);
+
+	switch (_stage)
+	{
+	case 1:
+		setMapLayer(STAGE1);
+		break;
+	case 2:
+		setMapLayer(STAGE2);
+		break;
+	case 3:
+		setMapLayer(STAGE3);
+		break;
+	}
+	setMenuLayer();
 }
 

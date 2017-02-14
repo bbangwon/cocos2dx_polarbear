@@ -44,6 +44,8 @@ public:
 	int getTileType(int col, int row);
 	void runIceBreakAnimation(Sprite *ice);
 	void fallSeaCallBack();
+	void onClickPause(Ref *object);
+	void restartGame();
 };
 
 #endif /* GameScene_h */

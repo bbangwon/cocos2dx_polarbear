@@ -15,6 +15,7 @@ Polarbear::Polarbear()
     this->setIgnoreAnchorPointForPosition(false);
 
 	_isAnimation = false;
+	_isFall = false;
 }
 
 Polarbear::~Polarbear()
@@ -23,6 +24,27 @@ Polarbear::~Polarbear()
 	_jumpLeft->release();
 	_jumpTop->release();
 	_jumpBottom->release();
+}
+
+Polarbear * Polarbear::create(Node * listener, SEL_CallFunc selector)
+{
+	Polarbear *ret = new Polarbear();
+	if (ret && ret->init(listener, selector))
+	{
+		ret->autorelease();
+	}
+	else
+	{
+		CC_SAFE_DELETE(ret);
+	}
+	return ret;
+}
+
+bool Polarbear::init(Node * listener, SEL_CallFunc selector)
+{
+	_listener = listener;
+	_selector = selector;
+	return init();
 }
 
 Polarbear* Polarbear::create(){
@@ -150,7 +172,7 @@ void Polarbear::setAnimation(int type)
 
 bool Polarbear::setMoveTo(Point moveTo)
 {
-	if (_isAnimation)
+	if (_isAnimation || _isFall)
 		return false;
 
 	_isAnimation = true;
@@ -174,4 +196,29 @@ bool Polarbear::setMoveTo(Point moveTo)
 void Polarbear::setWait()
 {
 	setAnimation(0);
+
+	callCallback();
+}
+
+void Polarbear::callCallback()
+{
+	if (_listener && _selector)
+		(_listener->*_selector)();
+}
+
+void Polarbear::fallSea(Node * listener, SEL_CallFunc selector)
+{
+	_isFall = true;
+	_listener = listener;
+	_selector = selector;
+
+	auto moveBy = MoveBy::create(0.5f, Point(0, -50));
+	auto easeMove = EaseSineIn::create(moveBy);
+
+	auto fadeout = FadeOut::create(0.5f);
+
+	auto action = Spawn::createWithTwoActions(easeMove, fadeout);
+	auto action2 = Sequence::createWithTwoActions(action, CallFunc::create(CC_CALLBACK_0(Polarbear::callCallback, this)));
+
+	_polarbear->runAction(action2);
 }

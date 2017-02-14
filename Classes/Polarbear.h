@@ -18,6 +18,9 @@ class Polarbear : public Layer
 public:
     Polarbear();
     ~Polarbear();
+
+	static Polarbear *create(Node *listener, SEL_CallFunc selector);
+	bool init(Node *listener, SEL_CallFunc selector);
     
     static Polarbear *create();
     
@@ -34,6 +37,13 @@ public:
 
 	void setWait();
 	bool _isAnimation;
+
+	Node *_listener;
+	SEL_CallFunc _selector;
+
+	void callCallback();
+	void fallSea(Node *listener, SEL_CallFunc selector);
+	bool _isFall;
 };
 
 

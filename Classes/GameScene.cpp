@@ -8,6 +8,7 @@
 
 #include "GameScene.h"
 #include "BackgroundLayer.h"
+#include "GameoverPopup.h"
 
 
 static Node *_stageScene;
@@ -77,6 +78,8 @@ Menu* GameScene::getMaptile(int row, int col, int type){
 	tileMenu->setPosition(Point(col * tile->getContentSize().width, row * tile->getContentSize().height));
 	tileMenu->setAnchorPoint(Point(0, 0));
 
+	tileMenu->setTag(1);
+
 	auto menu = Menu::create(tileMenu, nullptr);
 	menu->setPosition(Point::ZERO);    
     
@@ -102,7 +105,7 @@ Menu* GameScene::getMaptile(int row, int col, int type){
         tile->addChild(ice);
         
         if(type == 1){
-            _polarbear = Polarbear::create();
+            _polarbear = Polarbear::create(this, CC_CALLFUNC_SELECTOR(GameScene::polarbearAnimationFinish));
             _polarbear->setAnchorPoint(Point(0.5f, 0));
             _polarbear->setPosition(Point(tileMenu->getPositionX() + tileMenu->getContentSize().width / 2, tileMenu->getPositionY() + tileMenu->getContentSize().height / 2));
             _mapLayer->addChild(_polarbear, 5);
@@ -288,5 +291,104 @@ bool GameScene::checkTileMove(int tileTag, int bearTag)
 		log("move false");
 		return false;
 	}
+}
+
+void GameScene::polarbearAnimationFinish()
+{
+	log("polarbearAnimationFinish");
+
+	int col = (_polarbearCurrentTag - 1) % 5;
+	int row = (_polarbearCurrentTag - 1 - col) / 5;
+
+	log("col = %d, row = %d", col, row);
+
+	int type = getTileType(col, row);
+	log("type = %d", type);
+
+	switch (type)
+	{
+	case 0:
+		break;
+	case 2:
+		break;
+	case 3:
+		break;
+	case 4:
+		runIceBreakAnimation((Sprite *)_mapLayer->getChildByTag(_polarbearCurrentTag)->getChildByTag(1)->getChildByTag(1)->getChildByTag(1));
+		_polarbear->fallSea(this, CC_CALLFUNC_SELECTOR(GameScene::fallSeaCallBack));
+		break;
+	}
+}
+
+int GameScene::getTileType(int col, int row)
+{
+	int type;
+
+	switch (_stage)
+	{
+	case 1:
+		type = STAGE1[row][col];
+		break;
+	case 2:
+		type = STAGE2[row][col];
+		break;
+	case 3:
+		type = STAGE3[row][col];
+		break;
+	}
+	return type;
+}
+
+void GameScene::runIceBreakAnimation(Sprite * ice)
+{
+	std::string iceImg;
+
+	int row = (ice->getParent()->getParent()->getParent()->getTag() - 1) / 5;
+	switch (row)
+	{
+	case 0:
+		iceImg = "break1.png";
+		break;
+	case 1:
+		iceImg = "break2.png";
+		break;
+	case 2:
+		iceImg = "break3.png";
+		break;
+	case 3:
+		iceImg = "break4.png";
+		break;
+	}
+
+	auto texture = Director::getInstance()->getTextureCache()->addImage(iceImg.c_str());
+	float textureWidth = texture->getContentSize().width / 5;
+	float textureHeight = texture->getContentSize().height;
+
+	SpriteFrame *frame[5];
+	frame[0] = SpriteFrame::createWithTexture(texture, Rect(0, 0, textureWidth, textureHeight));
+	frame[1] = SpriteFrame::createWithTexture(texture, Rect(textureWidth * 1, 0, textureWidth, textureHeight));
+	frame[2] = SpriteFrame::createWithTexture(texture, Rect(textureWidth * 2, 0, textureWidth, textureHeight));
+	frame[3] = SpriteFrame::createWithTexture(texture, Rect(textureWidth * 3, 0, textureWidth, textureHeight));
+	frame[4] = SpriteFrame::createWithTexture(texture, Rect(textureWidth * 4, 0, textureWidth, textureHeight));
+
+	Vector<SpriteFrame*> AniFrames;
+	AniFrames.pushBack(frame[0]);
+	AniFrames.pushBack(frame[1]);
+	AniFrames.pushBack(frame[2]);
+	AniFrames.pushBack(frame[3]);
+	AniFrames.pushBack(frame[4]);
+
+	auto animation = Animation::createWithSpriteFrames(AniFrames);
+	animation->setDelayPerUnit(0.1f);
+	auto animate = Animate::create(animation);
+
+	ice->runAction(animate);
+
+}
+
+void GameScene::fallSeaCallBack()
+{
+	log("fallSeaCallBack");
+	this->addChild(GameoverPopup::create(), 99);
 }
 

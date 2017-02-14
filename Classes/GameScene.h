@@ -39,6 +39,11 @@ public:
 	bool checkTileMove(int tileTag, int bearTag);
 
 	Sprite *_beforeIceTile;
+
+	void polarbearAnimationFinish();
+	int getTileType(int col, int row);
+	void runIceBreakAnimation(Sprite *ice);
+	void fallSeaCallBack();
 };
 
 #endif /* GameScene_h */

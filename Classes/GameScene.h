@@ -47,6 +47,22 @@ public:
 	void onClickPause(Ref *object);
 	void restartGame();
 	void removeMe(Node* node);
+
+	Label *_labelScore;
+	Label *_labelPenguin;
+	int _score;
+	int _rescueCount;
+
+	void setTimer();
+	void updateTimer(float time);
+	void stopTimer();
+	void resumeTimer();
+	void pauseTimer();
+
+	float _countdownTimer;
+
+	ProgressTimer *_progressBar;
+	Label *_labelCountdown;
 };
 
 #endif /* GameScene_h */

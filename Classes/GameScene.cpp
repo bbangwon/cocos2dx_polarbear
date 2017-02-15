@@ -11,6 +11,11 @@
 #include "GameoverPopup.h"
 #include "PausePopup.h"
 
+#define RESCUE 5000
+#define TILE 1000
+#define TIME 30.00f
+#define GOAL_BONUS 10000
+
 
 static Node *_stageScene;
 static int _stage;
@@ -177,6 +182,48 @@ void GameScene::setMenuLayer(){
 	auto menu = Menu::create(pause, nullptr);
 	menu->setPosition(Point::ZERO);
 	_menuLayer->addChild(menu);
+
+	_score = 0;
+	_rescueCount = 0;
+
+	auto _scoreIcon = Sprite::create("score.png");
+	_scoreIcon->setPosition(Point(30, winSize.height - 20));
+	_menuLayer->addChild(_scoreIcon);
+
+	_labelScore = Label::createWithSystemFont("0", "Arial", 20);
+	_labelScore->setAnchorPoint(Point(0, 0.5f));
+	_labelScore->setPosition(Point(60, winSize.height - 20));
+	_menuLayer->addChild(_labelScore);
+
+	auto penguinIcon = Sprite::create("icon_penguin.png");
+	penguinIcon->setPosition(Point(140, winSize.height - 20));
+	_menuLayer->addChild(penguinIcon);
+
+	_labelPenguin = Label::createWithSystemFont("0", "Arial", 20);
+	_labelPenguin->setPosition(Point(160, winSize.height - 20));
+	_labelPenguin->setColor(Color3B(247, 136, 211));
+	_menuLayer->addChild(_labelPenguin);
+
+	auto timerBack = Sprite::create("time_bar.png");
+	timerBack->setPosition(Point(80, winSize.height - 40));
+	_menuLayer->addChild(timerBack);
+
+	auto progressSprite = Sprite::create("time_gage.png");
+	_progressBar = ProgressTimer::create(progressSprite);
+	_progressBar->setPosition(Point(timerBack->getContentSize().width / 2 + 8, timerBack->getContentSize().height / 2));
+	_progressBar->setType(ProgressTimer::Type::BAR);
+	_progressBar->setBarChangeRate(Point(1, 0));
+	_progressBar->setMidpoint(Point(0, 0.5f));
+	_progressBar->setPercentage(100);
+	timerBack->addChild(_progressBar);
+
+	_labelCountdown = Label::createWithSystemFont("30.00", "Arial Bold", 10);
+	_labelCountdown->setColor(Color3B::BLACK);
+	_labelCountdown->setAnchorPoint(Point(0.5f, 0.5f));
+	_labelCountdown->setPosition(Point(timerBack->getContentSize().width / 2 + 8, timerBack->getContentSize().height / 2 - 1));
+	timerBack->addChild(_labelCountdown);
+
+	setTimer();
 }
 
 Sprite* GameScene::getPenguinSprite(){
@@ -318,11 +365,18 @@ void GameScene::polarbearAnimationFinish()
 	switch (type)
 	{
 	case 0:
+		_score = _score + TILE;
 		break;
 	case 2:
+		_score = _score + TILE;
+		stopTimer();
+		_score = _score + ((_countdownTimer / TIME) * GOAL_BONUS);
 		break;
 	case 3:
 	{
+		_score = _score + RESCUE;
+		_rescueCount = _rescueCount + 1;
+
 		auto ice = (Sprite*)_mapLayer->getChildByTag(_polarbearCurrentTag)->getChildByTag(1)->getChildByTag(1)->getChildByTag(1);
 		auto penguin = (Sprite *)ice->getChildByTag(1);
 		auto cage = (Sprite *)penguin->getChildByTag(1);
@@ -345,10 +399,20 @@ void GameScene::polarbearAnimationFinish()
 	}
 		break;
 	case 4:
+		stopTimer();
 		runIceBreakAnimation((Sprite *)_mapLayer->getChildByTag(_polarbearCurrentTag)->getChildByTag(1)->getChildByTag(1)->getChildByTag(1));
 		_polarbear->fallSea(this, CC_CALLFUNC_SELECTOR(GameScene::fallSeaCallBack));
 		break;
 	}
+
+	char c_score[50];
+	sprintf(c_score, "%d", _score);
+	_labelScore->setString(c_score);
+
+	char c_rescue[20];
+	sprintf(c_rescue, "%d", _rescueCount);
+	_labelPenguin->setString(c_rescue);
+
 }
 
 int GameScene::getTileType(int col, int row)
@@ -426,12 +490,14 @@ void GameScene::fallSeaCallBack()
 void GameScene::onClickPause(Ref * object)
 {
 	log("onClickPause");
+	pauseTimer();
 	this->addChild(PausePopup::create(), 99);
 }
 
 void GameScene::restartGame()
 {
 	log("restartGame");
+	resumeTimer();
 
 	_mapLayer->removeAllChildrenWithCleanup(true);
 	_menuLayer->removeAllChildrenWithCleanup(true);
@@ -454,5 +520,47 @@ void GameScene::restartGame()
 void GameScene::removeMe(Node * node)
 {
 	node->removeFromParentAndCleanup(true);
+}
+
+void GameScene::setTimer()
+{
+	_progressBar->runAction(ProgressFromTo::create(TIME, 100, 0));
+	_countdownTimer = TIME;
+	schedule(CC_SCHEDULE_SELECTOR(GameScene::updateTimer));
+}
+
+void GameScene::updateTimer(float time)
+{
+	_countdownTimer -= time;
+	if (_countdownTimer < 0) {
+		_countdownTimer = 0;
+		unschedule(CC_SCHEDULE_SELECTOR(GameScene::updateTimer));
+		_labelCountdown->setString("0.0");
+
+		this->addChild(GameoverPopup::create(), 99);
+	}
+
+	log("_countDownTimer : %f", _countdownTimer);
+	char str[10] = { 0 };
+	sprintf(str, "%2.2f", _countdownTimer);
+	_labelCountdown->setString(str);
+}
+
+void GameScene::stopTimer()
+{
+	unschedule(CC_SCHEDULE_SELECTOR(GameScene::updateTimer));
+	_progressBar->stopAllActions();
+}
+
+void GameScene::resumeTimer()
+{
+	this->resume();
+	_progressBar->resume();
+}
+
+void GameScene::pauseTimer()
+{
+	this->pause();
+	_progressBar->pause();
 }
 

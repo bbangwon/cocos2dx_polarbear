@@ -60,6 +60,9 @@ void PausePopup::onClickBack(Ref * object)
 {
 	log("onClickBack");
 
+	GameScene *gameScene = (GameScene*)this->getParent();
+	gameScene->resumeTimer();
+
 	this->removeFromParentAndCleanup(true);
 }
 

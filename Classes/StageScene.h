@@ -24,6 +24,8 @@ public:
     cocos2d::LayerColor *_stageLayer;
     void setStage();
     void onClickStage(Ref *object);
+
+	void onEnter();
 };
 
 

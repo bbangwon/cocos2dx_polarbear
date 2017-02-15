@@ -7,6 +7,7 @@
 //
 
 #include "Polarbear.h"
+#include "SimpleAudioEngine.h"
 
 Polarbear::Polarbear()
 {
@@ -277,6 +278,8 @@ void Polarbear::setWait()
 
 void Polarbear::callCallback()
 {
+	CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("sound/jump.wav");
+
 	if (_listener && _selector)
 		(_listener->*_selector)();
 }

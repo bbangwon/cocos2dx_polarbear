@@ -10,6 +10,8 @@
 #include "BackgroundLayer.h"
 #include "GameoverPopup.h"
 #include "PausePopup.h"
+#include "ResultPopup.h"
+#include "SimpleAudioEngine.h"
 
 #define RESCUE 5000
 #define TILE 1000
@@ -371,9 +373,20 @@ void GameScene::polarbearAnimationFinish()
 		_score = _score + TILE;
 		stopTimer();
 		_score = _score + ((_countdownTimer / TIME) * GOAL_BONUS);
+		{
+			auto UserDefault = UserDefault::getInstance();
+			if (_stage == 1)
+				UserDefault->setBoolForKey("lock2", false);
+			else if (_stage == 2)
+				UserDefault->setBoolForKey("lock3", false);
+
+			UserDefault->flush();
+		}
+		this->addChild(ResultPopup::create(_score, _rescueCount), 99);
 		break;
 	case 3:
 	{
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("sound/cage.wav");
 		_score = _score + RESCUE;
 		_rescueCount = _rescueCount + 1;
 

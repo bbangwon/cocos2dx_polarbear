@@ -10,6 +10,7 @@
 #include "BackgroundLayer.h"
 #include "StageScene.h"
 #include "RankingPopup.h"
+#include "SimpleAudioEngine.h"
 
 USING_NS_CC;
 
@@ -54,6 +55,8 @@ bool StartScene::init()
     auto menu = Menu::create(gameMenu, rankMenu, nullptr);
     menu->setPosition(Point::ZERO);
     this->addChild(menu);
+
+	CocosDenshion::SimpleAudioEngine::getInstance()->playBackgroundMusic("sound/bgm.mp3", true);
     
     return true;
 }

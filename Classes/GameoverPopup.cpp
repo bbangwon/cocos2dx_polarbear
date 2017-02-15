@@ -1,4 +1,5 @@
 #include "GameoverPopup.h"
+#include "SimpleAudioEngine.h"
 
 GameoverPopup * GameoverPopup::create()
 {
@@ -16,6 +17,10 @@ GameoverPopup * GameoverPopup::create()
 
 bool GameoverPopup::init()
 {
+
+	CocosDenshion::SimpleAudioEngine::getInstance()->pauseBackgroundMusic();
+	CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("sound/gameover.mp3");
+
 	auto winSize = Director::getInstance()->getOpenGLView()->getDesignResolutionSize();
 
 	auto fadeBack = LayerColor::create(Color4B(0, 0, 0, 0), winSize.width, winSize.height);
@@ -40,6 +45,7 @@ void GameoverPopup::onEnter()
 
 bool GameoverPopup::onTouchBegan(Touch * touch, Event * event)
 {
+	CocosDenshion::SimpleAudioEngine::getInstance()->resumeBackgroundMusic();
 	Director::getInstance()->popScene();
 	return true;
 }

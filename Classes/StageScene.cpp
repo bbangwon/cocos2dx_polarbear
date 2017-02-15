@@ -115,3 +115,9 @@ void StageScene::onClickStage(cocos2d::Ref *object)
     Director::getInstance()->pushScene(scene);
     
 }
+
+void StageScene::onEnter()
+{
+	Layer::onEnter();
+	setStage();
+}

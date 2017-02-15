@@ -46,6 +46,7 @@ public:
 	void fallSeaCallBack();
 	void onClickPause(Ref *object);
 	void restartGame();
+	void removeMe(Node* node);
 };
 
 #endif /* GameScene_h */

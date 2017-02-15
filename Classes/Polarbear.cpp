@@ -16,6 +16,7 @@ Polarbear::Polarbear()
 
 	_isAnimation = false;
 	_isFall = false;
+	_penguinCnt = 0;
 }
 
 Polarbear::~Polarbear()
@@ -24,6 +25,10 @@ Polarbear::~Polarbear()
 	_jumpLeft->release();
 	_jumpTop->release();
 	_jumpBottom->release();
+	_penguinWait->release();
+	_penguinJumpLeft->release();
+	_penguinJumpTop->release();
+	_penguinJumpBottom->release();
 }
 
 Polarbear * Polarbear::create(Node * listener, SEL_CallFunc selector)
@@ -44,6 +49,74 @@ bool Polarbear::init(Node * listener, SEL_CallFunc selector)
 {
 	_listener = listener;
 	_selector = selector;
+
+	{
+		SpriteFrame *frame[3];
+		frame[0] = SpriteFrame::create("penguin_walk1.png", Rect(0, 0, 29, 34));
+		frame[1] = SpriteFrame::create("penguin_walk2.png", Rect(0, 0, 29, 34));
+		frame[2] = SpriteFrame::create("penguin_walk3.png", Rect(0, 0, 29, 34));
+
+		Vector<SpriteFrame*> AniFrames;
+		AniFrames.pushBack(frame[0]);
+		AniFrames.pushBack(frame[1]);
+		AniFrames.pushBack(frame[2]);
+
+		auto animation = Animation::createWithSpriteFrames(AniFrames);
+		animation->setDelayPerUnit(0.33f);
+		_penguinWait = RepeatForever::create(Animate::create(animation));
+		_penguinWait->retain();		
+	}
+	{
+		SpriteFrame *frame[4];
+		frame[0] = SpriteFrame::create("penguin_jump1.png", Rect(0, 0, 29, 34));
+		frame[1] = SpriteFrame::create("penguin_jump2.png", Rect(0, 0, 29, 34));
+		frame[2] = SpriteFrame::create("penguin_jump1.png", Rect(0, 0, 29, 34));
+		frame[3] = SpriteFrame::create("penguin_jump2.png", Rect(0, 0, 29, 34));
+
+		Vector<SpriteFrame*> AniFrames;
+		AniFrames.pushBack(frame[0]);
+		AniFrames.pushBack(frame[1]);
+		AniFrames.pushBack(frame[2]);
+		AniFrames.pushBack(frame[3]);
+
+		auto animation = Animation::createWithSpriteFrames(AniFrames);
+		animation->setDelayPerUnit(0.25f);
+		_penguinJumpLeft = Animate::create(animation);
+		_penguinJumpLeft->retain();
+	}
+	{
+		SpriteFrame *frame[3];
+		frame[0] = SpriteFrame::create("penguin_jump_back1.png", Rect(0, 0, 29, 34));
+		frame[1] = SpriteFrame::create("penguin_jump_back2.png", Rect(0, 0, 29, 34));
+		frame[2] = SpriteFrame::create("penguin_jump_back3.png", Rect(0, 0, 29, 34));
+
+		Vector<SpriteFrame*> AniFrames;
+		AniFrames.pushBack(frame[0]);
+		AniFrames.pushBack(frame[1]);
+		AniFrames.pushBack(frame[2]);
+
+		auto animation = Animation::createWithSpriteFrames(AniFrames);
+		animation->setDelayPerUnit(0.33f);
+		_penguinJumpTop = RepeatForever::create(Animate::create(animation));
+		_penguinJumpTop->retain();
+	}
+	{
+		SpriteFrame *frame[3];
+		frame[0] = SpriteFrame::create("penguin_jump_front1.png", Rect(0, 0, 29, 34));
+		frame[1] = SpriteFrame::create("penguin_jump_front2.png", Rect(0, 0, 29, 34));
+		frame[2] = SpriteFrame::create("penguin_jump_front3.png", Rect(0, 0, 29, 34));
+
+		Vector<SpriteFrame*> AniFrames;
+		AniFrames.pushBack(frame[0]);
+		AniFrames.pushBack(frame[1]);
+		AniFrames.pushBack(frame[2]);
+
+		auto animation = Animation::createWithSpriteFrames(AniFrames);
+		animation->setDelayPerUnit(0.33f);
+		_penguinJumpBottom = RepeatForever::create(Animate::create(animation));
+		_penguinJumpBottom->retain();
+	}
+
 	return init();
 }
 
@@ -154,11 +227,11 @@ void Polarbear::setAnimation(int type)
 		_isAnimation = false;
 		break;
 	case 1:
-		_polarbear->setFlipX(false);
+		setFlipNode(false);		
 		_polarbear->runAction(Sequence::createWithTwoActions((ActionInterval*)_jumpLeft, CallFunc::create(CC_CALLBACK_0(Polarbear::setWait, this))));
 		break;
 	case 2:
-		_polarbear->setFlipX(true);
+		setFlipNode(true);		
 		_polarbear->runAction(Sequence::createWithTwoActions((ActionInterval*)_jumpLeft, CallFunc::create(CC_CALLBACK_0(Polarbear::setWait, this))));
 		break;
 	case 3:
@@ -168,6 +241,8 @@ void Polarbear::setAnimation(int type)
 		_polarbear->runAction(Sequence::createWithTwoActions((ActionInterval*)_jumpBottom, CallFunc::create(CC_CALLBACK_0(Polarbear::setWait, this))));
 		break;
 	}
+
+	setPenguinAnimation(type);
 }
 
 bool Polarbear::setMoveTo(Point moveTo)
@@ -221,4 +296,96 @@ void Polarbear::fallSea(Node * listener, SEL_CallFunc selector)
 	auto action2 = Sequence::createWithTwoActions(action, CallFunc::create(CC_CALLBACK_0(Polarbear::callCallback, this)));
 
 	_polarbear->runAction(action2);
+
+	for (int i = 0; i < _penguinCnt; i++)
+	{
+		auto pen = (Sprite*)_polarbear->getChildByTag(i);
+		pen->runAction(FadeOut::create(0.5f));
+	}
+}
+
+void Polarbear::setPenguin()
+{
+	float penX;
+	float bearX;
+
+	if (!_isFlip) {
+		penX = _polarbear->getContentSize().width / 2 + (_penguinCnt * 10 + 5);
+		bearX = this->getContentSize().width / 2 - _penguinCnt * 4;
+	}
+	else
+	{
+		penX = _polarbear->getContentSize().width / 2 - (_penguinCnt * 10 + 5);
+		bearX = this->getContentSize().width / 2 + _penguinCnt * 4;
+	}	
+
+	auto pen = Sprite::create("penguin_walk1.png");
+	pen->setTag(_penguinCnt);
+	pen->setFlippedX(_isFlip);
+	pen->setPosition(Point(penX, pen->getContentSize().height / 2));
+	_polarbear->addChild(pen);
+	pen->runAction((Action*)_penguinWait->clone());
+
+	_polarbear->setPositionX(bearX);
+	_penguinCnt++;
+
+}
+
+void Polarbear::setFlipNode(bool isFlip)
+{
+	_isFlip = isFlip;	
+	_polarbear->setFlippedX(isFlip);
+
+	float bearX;
+	if (!isFlip)
+		bearX = this->getContentSize().width / 2 - _penguinCnt * 4;
+	else
+		bearX = this->getContentSize().width / 2 + _penguinCnt * 4;
+
+	_polarbear->setPositionX(bearX);
+
+	for (int i = 0; i < _penguinCnt; i++)
+	{
+		auto pen = (Sprite*)_polarbear->getChildByTag(i);
+		pen->setFlippedX(isFlip);
+
+		float penX;
+		if (!isFlip)
+			penX = _polarbear->getContentSize().width / 2 + (i * 10 + 5);
+		else
+			penX = _polarbear->getContentSize().width / 2 - (i * 10 + 5);
+
+		pen->setPositionX(penX);
+	}
+
+
+}
+
+void Polarbear::setPenguinAnimation(int type)
+{
+	Action *action;
+	switch (type)
+	{
+	case 0:
+		action = _penguinWait;
+		break;
+	case 1:
+		action = _penguinJumpLeft;
+		break;
+	case 2:
+		action = _penguinJumpLeft;
+		break;
+	case 3:
+		action = _penguinJumpTop;
+		break;
+	case 4:
+		action = _penguinJumpBottom;
+		break;
+	}
+
+	for (int i = 0; i < _penguinCnt; i++) {
+		auto pen = (Sprite*)_polarbear->getChildByTag(i);
+		pen->stopAllActions();
+		pen->runAction((Action*)action->clone());
+	}
 }

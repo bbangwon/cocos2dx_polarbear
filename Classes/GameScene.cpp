@@ -191,6 +191,7 @@ Sprite* GameScene::getPenguinSprite(){
     frame[2] = SpriteFrame::createWithTexture(texture, Rect(textureWidth * 2,0, textureWidth, textureHeight));
     
     auto penguin = Sprite::createWithSpriteFrame(frame[0]);
+	penguin->setTag(1);
     
     Vector<SpriteFrame*> AniFrames;
     AniFrames.pushBack(frame[0]);
@@ -204,6 +205,7 @@ Sprite* GameScene::getPenguinSprite(){
     penguin->runAction(RepeatForever::create(animate));
     
     auto cage = Sprite::create("cage.png");
+	cage->setTag(1);
     cage->setPosition(Point(penguin->getContentSize().width / 2, 20));
     penguin->addChild(cage);
     
@@ -320,6 +322,27 @@ void GameScene::polarbearAnimationFinish()
 	case 2:
 		break;
 	case 3:
+	{
+		auto ice = (Sprite*)_mapLayer->getChildByTag(_polarbearCurrentTag)->getChildByTag(1)->getChildByTag(1)->getChildByTag(1);
+		auto penguin = (Sprite *)ice->getChildByTag(1);
+		auto cage = (Sprite *)penguin->getChildByTag(1);
+
+		int multiplication = 1;
+		float random = CCRANDOM_MINUS1_1();
+		if (random < 0)
+			multiplication = -1;
+
+		auto move = MoveBy::create(0.5f, Point(200 * multiplication, 100));
+		auto scale = ScaleTo::create(0.5f, 5);
+		auto rotate = RotateBy::create(0.5f, 360);
+		auto fade = FadeOut::create(0.5f);
+
+		auto action = Spawn::create(move, scale, rotate, fade, nullptr);
+		cage->runAction(Sequence::createWithTwoActions(action, CallFuncN::create(CC_CALLBACK_1(GameScene::removeMe, this))));		
+		penguin->runAction(Sequence::createWithTwoActions(DelayTime::create(0.5f), CallFuncN::create(CC_CALLBACK_1(GameScene::removeMe, this))));
+
+		_polarbear->setPenguin();
+	}
 		break;
 	case 4:
 		runIceBreakAnimation((Sprite *)_mapLayer->getChildByTag(_polarbearCurrentTag)->getChildByTag(1)->getChildByTag(1)->getChildByTag(1));
@@ -426,5 +449,10 @@ void GameScene::restartGame()
 		break;
 	}
 	setMenuLayer();
+}
+
+void GameScene::removeMe(Node * node)
+{
+	node->removeFromParentAndCleanup(true);
 }
 

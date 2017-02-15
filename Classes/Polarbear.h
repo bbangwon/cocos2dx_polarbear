@@ -44,6 +44,18 @@ public:
 	void callCallback();
 	void fallSea(Node *listener, SEL_CallFunc selector);
 	bool _isFall;
+
+	Action *_penguinWait;
+	Action *_penguinJumpLeft;
+	Action *_penguinJumpTop;
+	Action *_penguinJumpBottom;
+
+	int _penguinCnt;
+	void setPenguin();
+
+	bool _isFlip;
+	void setFlipNode(bool isFlip);
+	void setPenguinAnimation(int type);
 };
 
 
